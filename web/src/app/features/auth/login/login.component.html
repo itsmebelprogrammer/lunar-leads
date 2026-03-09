@@ -1,0 +1,80 @@
+<div class="auth-page">
+
+  <div class="stars" aria-hidden="true">
+    @for (s of stars; track $index) {
+      <span class="star"
+        [style.left.%]="s.x"
+        [style.top.%]="s.y"
+        [style.width.px]="s.size"
+        [style.height.px]="s.size"
+        [style.animation-delay.s]="s.delay">
+      </span>
+    }
+  </div>
+
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="auth-moon">🌙</span>
+      <h1>Lunar Leads</h1>
+      <p>Entre na sua conta</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" novalidate>
+
+      <div class="form-group">
+        <label class="form-label" for="email">E-mail</label>
+        <input id="email" type="email" class="form-control"
+          [class.is-invalid]="error"
+          placeholder="voce@exemplo.com"
+          [(ngModel)]="email" name="email"
+          required autocomplete="email" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Senha</label>
+        <div class="input-wrapper">
+          <input id="password" [type]="showPass ? 'text' : 'password'"
+            class="form-control"
+            [class.is-invalid]="error"
+            placeholder="••••••••"
+            [(ngModel)]="password" name="password"
+            required autocomplete="current-password" />
+          <button type="button" class="input-eye" (click)="showPass = !showPass">
+            {{ showPass ? '🙈' : '👁️' }}
+          </button>
+        </div>
+      </div>
+
+      @if (error) {
+        <div class="alert alert--error" style="margin-bottom: 20px;">
+          <span class="alert-icon">⚠️</span>
+          <span>{{ error }}</span>
+        </div>
+      }
+
+      <button type="submit" class="btn btn--primary btn--full btn--lg"
+        [disabled]="loading || !email || !password">
+        @if (loading) {
+          <span class="btn-spinner"></span> Entrando...
+        } @else {
+          Entrar
+        }
+      </button>
+
+    </form>
+
+    <div style="margin: 24px 0; display: flex; align-items: center; gap: 16px; color: var(--text-faint); font-size: 12px;">
+      <span style="flex:1; height:1px; background: var(--border);"></span>
+      ou
+      <span style="flex:1; height:1px; background: var(--border);"></span>
+    </div>
+
+    <p style="text-align:center; font-size:14px; color:var(--text-muted);">
+      Não tem conta?
+      <a routerLink="/register" style="color:var(--purple-light); font-weight:600;">
+        Criar conta
+      </a>
+    </p>
+  </div>
+
+</div>

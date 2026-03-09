@@ -1,0 +1,53 @@
+﻿# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# Logica proprietaria
+apps/api/worker/scraper.py
+apps/api/worker/scraper.py.backup
+
+# Scripts locais
+setup-git.ps1
+apps/api/fix_jobs.py
+apps/api/cancel_jobs.py
+apps/api/debug_*.py
+apps/api/check_*.py
+
+# WebDriver
+.wdm/
+chromedriver*
+
+# Node / Angular
+node_modules/
+web/dist/
+web/.angular/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+celerybeat-schedule
+celerybeat.pid
+
+# Temporarios
+*.csv
+*.xlsx
+
+# Backups
+*.bak

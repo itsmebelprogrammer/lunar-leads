@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: lunar-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lunar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lunar}
+      POSTGRES_DB: ${POSTGRES_DB:-lunarleads}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    container_name: lunar-redis
+    ports:
+      - "6379:6379"
+volumes:
+  pgdata:

@@ -41,4 +41,10 @@ async def seed():
         await db.commit()
         print("Seed completo!")
 
-asyncio.run(seed())
+try:
+    asyncio.run(seed())
+except Exception as e:
+    print(f"SEED ERROR: {e}", flush=True)
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)

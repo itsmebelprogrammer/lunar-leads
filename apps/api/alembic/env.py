@@ -1,4 +1,4 @@
-﻿import os, sys
+import os, sys
 sys.path.insert(0, os.getcwd())
 from logging.config import fileConfig
 from sqlalchemy import create_engine, pool
@@ -12,7 +12,9 @@ if config.config_file_name is not None:
 from app.models.base import Base
 target_metadata = Base.metadata
 
-DB_URL = "postgresql+psycopg2://lunar:lunar@localhost:5432/lunarleads"
+DB_URL = os.environ.get("DATABASE_URL", "postgresql+psycopg2://lunar:lunar@localhost:5432/lunarleads")
+# Garante que usa psycopg2 (sincrono) para migrations
+DB_URL = DB_URL.replace("postgresql+asyncpg://", "postgresql+psycopg2://").replace("postgresql://", "postgresql+psycopg2://")
 
 def run_migrations_offline():
     context.configure(url=DB_URL, target_metadata=target_metadata, literal_binds=True)

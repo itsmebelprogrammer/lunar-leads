@@ -1,40 +1,61 @@
 # 🌙 Lunar Leads
 
-Plataforma SaaS de geração de leads B2B.
+**B2B SaaS lead generation platform.**
 
-> **Este repositório contém uma versão pública do projeto.**
-> O scraper proprietário não está incluído — veja a seção [Scraper](#scraper) abaixo.
+> **This repository contains a public version of the project.** The proprietary scraper is not included — see the [Scraper](#scraper) section below.
 
 ---
 
-## O que é
+## What is it?
 
-O Lunar Leads permite que pequenas empresas e profissionais de vendas gerem listas de leads qualificados em minutos. O usuário escolhe um estado, um nicho de mercado e o sistema busca empresas automaticamente e entrega um arquivo CSV com nome, telefone, site e link direto para WhatsApp.
+Lunar Leads lets small businesses and sales professionals generate qualified lead lists in minutes. The user selects a state and a market niche, the system automatically searches for companies and delivers a CSV file with business name, phone, website, and a direct WhatsApp link.
 
-## Stack
+---
 
-| Camada | Tecnologia |
-|---|---|
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
 | API | FastAPI + Python |
-| Banco | PostgreSQL |
+| Database | PostgreSQL |
 | ORM | SQLAlchemy 2.0 async |
 | Migrations | Alembic |
 | Auth | JWT |
 | Worker | Celery + Redis |
 | Frontend | Angular 17+ |
+| Infra | Docker Compose |
 
-## Funcionalidades
+---
 
-- Cadastro e login com JWT
-- Controle de cota mensal por usuário
-- Criação de listas de leads por estado + nicho 
-- Processamento assíncrono via Celery
-- Download CSV com leads gerados
-- Painel admin com cota ilimitada
+## Features
 
-## Como rodar localmente
+- User registration and login with JWT authentication
+- Monthly quota control per user
+- Lead list creation by state + market niche
+- Async processing via Celery workers
+- CSV download with generated leads
+- Admin panel with unlimited quota
 
-### Pré-requisitos
+---
+
+## Project Structure
+
+```
+lunar-leads/
+├── apps/
+│   └── api/          ← FastAPI backend
+│       ├── app/      ← Models, routers, schemas, services
+│       ├── worker/   ← Celery + scraper (stub)
+│       └── alembic/  ← Database migrations
+├── web/              ← Angular 17+ frontend
+└── infra/            ← Docker Compose
+```
+
+---
+
+## Running Locally
+
+### Prerequisites
 
 - Python 3.11+
 - Node.js 18+
@@ -45,27 +66,27 @@ O Lunar Leads permite que pequenas empresas e profissionais de vendas gerem list
 ```bash
 cd apps/api
 
-# Criar ambiente virtual
+# Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate  # Windows
 source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate   # Windows
 
-# Instalar dependências
+# Install dependencies
 pip install -r requirements.txt
 
-# Copiar e preencher variáveis de ambiente
+# Copy and fill environment variables
 cp .env.example .env
 
-# Subir banco e Redis
+# Start database and Redis
 docker-compose -f ../../infra/docker-compose.yml up -d
 
-# Aplicar migrations
+# Apply migrations
 alembic upgrade head
 
-# Popular estados e nichos
+# Seed states and niches
 python scripts/seed.py
 
-# Rodar API
+# Start API
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -84,35 +105,29 @@ npm install
 ng serve
 ```
 
-Acesse em `http://localhost:4200`
+Access at `http://localhost:4200`
+
+---
 
 ## Scraper
 
-O arquivo `worker/scraper.py` presente neste repositório é um **stub público** — contém apenas a interface esperada, sem a implementação real.
+The `worker/scraper.py` file in this repository is a **public stub** — it contains only the expected interface, without the real implementation.
 
-Para ativar o scraper, implemente a função `scrape_google_maps()` seguindo a interface documentada no arquivo:
+To activate the scraper, implement the `scrape_google_maps()` function following the interface documented in the file:
 
 ```python
-def scrape_google_maps(niche_label: str, state_name: str, limit: int = 50) -> list[dict]:
-    # Retorna lista de dicts com keys:
+def scrape_google_maps(
+    niche_label: str,
+    state_name: str,
+    limit: int = 50
+) -> list[dict]:
+    # Returns a list of dicts with keys:
     # name, phone, website, whatsapp
     ...
 ```
 
-## Estrutura do projeto
+---
 
-```
-lunar/
-├── apps/
-│   └── api/          ← Backend FastAPI
-│       ├── app/      ← Models, routers, schemas, services
-│       ├── worker/   ← Celery + scraper (stub)
-│       └── alembic/  ← Migrations do banco
-├── web/              ← Frontend Angular 17+
-└── infra/            ← Docker Compose
-```
+## License
 
-## Licença
-
-Este projeto é disponibilizado para fins de estudo e apresentação.
-A implementação completa do scraper não está incluída neste repositório público.
+This project is made available for study and portfolio purposes. The complete scraper implementation is not included in this public repository.

@@ -1,6 +1,5 @@
 # 🌙 Lunar Leads
 
-![CI](https://github.com/itsmebelprogrammer/lunar-leads/actions/workflows/ci.yml/badge.svg)
 
 **B2B SaaS lead generation platform.**
 

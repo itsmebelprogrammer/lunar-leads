@@ -1,5 +1,7 @@
 # 🌙 Lunar Leads
 
+![CI](https://github.com/itsmebelprogrammer/lunar-leads/actions/workflows/ci.yml/badge.svg)
+
 **B2B SaaS lead generation platform.**
 
 > **This repository contains a public version of the project.** The proprietary scraper is not included — see the [Scraper](#scraper) section below.

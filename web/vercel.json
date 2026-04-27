@@ -3,6 +3,7 @@
   "outputDirectory": "dist/web/browser",
   "installCommand": "npm install",
   "rewrites": [
+    { "source": "/api/:path*", "destination": "https://lunar-leads-api.onrender.com/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

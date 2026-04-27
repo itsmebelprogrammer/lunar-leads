@@ -15,6 +15,9 @@ target_metadata = Base.metadata
 DB_URL = os.environ.get("DATABASE_URL", "postgresql+psycopg2://lunar:lunar@localhost:5432/lunarleads")
 # Garante que usa psycopg2 (sincrono) para migrations
 DB_URL = DB_URL.replace("postgresql+asyncpg://", "postgresql+psycopg2://").replace("postgresql://", "postgresql+psycopg2://")
+# SSL obrigatorio para ligacoes remotas (psycopg2 sslmode=require nao verifica cert)
+if "localhost" not in DB_URL and "127.0.0.1" not in DB_URL and "sslmode" not in DB_URL:
+    DB_URL += "?sslmode=require"
 
 def run_migrations_offline():
     context.configure(url=DB_URL, target_metadata=target_metadata, literal_binds=True)

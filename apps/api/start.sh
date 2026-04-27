@@ -1,8 +1,7 @@
 #!/bin/sh
-set -e
 
 echo "==> Running database migrations..."
-alembic upgrade head
+alembic upgrade head || echo "==> Migration failed, skipping (tables will be created by lifespan)"
 
 echo "==> Starting Celery worker..."
 celery -A worker.celery_app.celery worker --loglevel=info --pool=solo &

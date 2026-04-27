@@ -16,6 +16,6 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> list[str]:
-        return [origin.strip() for origin in self.FRONTEND_URL.split(",")]
+        return [origin.strip().rstrip("/") for origin in self.FRONTEND_URL.split(",")]
 
 settings = Settings()

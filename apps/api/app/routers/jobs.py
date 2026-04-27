@@ -22,6 +22,12 @@ ADMIN_LEADS_LIMIT = 200
 def is_admin(user: User) -> bool:
     return str(user.role) == "ADMIN"
 
+def _parse_uuid(value: str) -> uuid.UUID:
+    try:
+        return uuid.UUID(value)
+    except ValueError:
+        raise HTTPException(404, "Job nao encontrado")
+
 def job_to_out(job: Job) -> JobOut:
     return JobOut(
         id=str(job.id),
@@ -37,6 +43,15 @@ def job_to_out(job: Job) -> JobOut:
         error_message=job.error_message,
     )
 
+async def _get_owned_job(job_id: str, user: User, db: AsyncSession) -> Job:
+    result = await db.execute(
+        select(Job).where(Job.id == _parse_uuid(job_id), Job.user_id == user.id)
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(404, "Job nao encontrado")
+    return job
+
 @router.get("/quota", response_model=QuotaOut)
 async def quota(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     if is_admin(current_user):
@@ -49,11 +64,9 @@ async def create_job(body: JobCreate, current_user: User = Depends(get_current_u
     if not is_admin(current_user):
         if not await check_quota(str(current_user.id), db):
             raise HTTPException(402, "Cota mensal esgotada")
-    result = await db.execute(select(Job).where(Job.user_id == current_user.id, Job.status.in_(["QUEUED","RUNNING"])))
+    result = await db.execute(select(Job).where(Job.user_id == current_user.id, Job.status.in_(["QUEUED", "RUNNING"])))
     if result.scalar_one_or_none():
         raise HTTPException(409, "Voce ja tem uma geracao de leads ativa")
-
-    limit = ADMIN_LEADS_LIMIT if is_admin(current_user) else MONTHLY_LIMIT
 
     job = Job(
         user_id=current_user.id,
@@ -62,7 +75,7 @@ async def create_job(body: JobCreate, current_user: User = Depends(get_current_u
         job_month=body.job_month,
         export_format=body.export_format,
         selected_columns=body.selected_columns,
-        leads_limit=limit,
+        leads_limit=ADMIN_LEADS_LIMIT if is_admin(current_user) else MONTHLY_LIMIT,
     )
     db.add(job)
     await db.commit()
@@ -81,39 +94,33 @@ async def list_jobs(current_user: User = Depends(get_current_user), db: AsyncSes
 
 @router.get("/{job_id}", response_model=JobOut)
 async def get_job(job_id: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Job).where(Job.id == uuid.UUID(job_id), Job.user_id == current_user.id))
-    job = result.scalar_one_or_none()
-    if not job:
-        raise HTTPException(404, "Leads nao encontrados")
-    return job_to_out(job)
+    return job_to_out(await _get_owned_job(job_id, current_user, db))
 
 @router.get("/{job_id}/events", response_model=List[JobEventOut])
 async def get_events(job_id: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(JobEvent).where(JobEvent.job_id == uuid.UUID(job_id)).order_by(JobEvent.ts))
+    await _get_owned_job(job_id, current_user, db)
+    result = await db.execute(select(JobEvent).where(JobEvent.job_id == _parse_uuid(job_id)).order_by(JobEvent.ts))
     return [JobEventOut(id=str(e.id), ts=e.ts, level=e.level, message=e.message) for e in result.scalars().all()]
 
 @router.get("/{job_id}/leads", response_model=List[LeadOut])
 async def get_leads(job_id: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Lead).where(Lead.job_id == uuid.UUID(job_id)))
+    await _get_owned_job(job_id, current_user, db)
+    result = await db.execute(select(Lead).where(Lead.job_id == _parse_uuid(job_id)))
     leads = result.scalars().all()
     return [LeadOut(id=str(l.id), name=l.name, phone_raw=l.phone_raw, phone_e164=l.phone_e164, website_url=l.website_url, whatsapp_url=l.whatsapp_url) for l in leads]
 
 @router.get("/{job_id}/download")
 async def download(job_id: str, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Job).where(Job.id == uuid.UUID(job_id), Job.user_id == current_user.id))
-    job = result.scalar_one_or_none()
-    if not job:
-        raise HTTPException(404, "Leads nao encontrados")
+    job = await _get_owned_job(job_id, current_user, db)
 
     niche_result = await db.execute(select(Niche).where(Niche.id == job.niche_id))
     niche = niche_result.scalar_one_or_none()
     niche_label = niche.label.replace(" ", "_") if niche else "Leads"
 
     finished = job.finished_at or datetime.now(timezone.utc)
-    date_str = finished.strftime("%d-%m-%Y_%Hh%M")
-    filename = f"{niche_label}_{date_str}.csv"
+    filename = f"{niche_label}_{finished.strftime('%d-%m-%Y_%Hh%M')}.csv"
 
-    result2 = await db.execute(select(Lead).where(Lead.job_id == uuid.UUID(job_id)))
+    result2 = await db.execute(select(Lead).where(Lead.job_id == _parse_uuid(job_id)))
     leads = result2.scalars().all()
     if not leads:
         raise HTTPException(404, "Sem leads para download")
@@ -121,12 +128,12 @@ async def download(job_id: str, current_user: User = Depends(get_current_user), 
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["nome", "telefone", "telefone_e164", "website", "whatsapp"])
-    for l in leads:
-        writer.writerow([l.name, l.phone_raw, l.phone_e164, l.website_url, l.whatsapp_url])
+    for lead in leads:
+        writer.writerow([lead.name, lead.phone_raw, lead.phone_e164, lead.website_url, lead.whatsapp_url])
     output.seek(0)
 
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )

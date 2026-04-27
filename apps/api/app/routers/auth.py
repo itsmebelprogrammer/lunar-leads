@@ -2,8 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from app.core.limiter import limiter
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import RegisterIn, LoginOut, UserOut
@@ -11,17 +10,17 @@ from app.core.security import hash_password, verify_password, create_access_toke
 from app.core.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/register", response_model=UserOut, status_code=201)
 @limiter.limit("5/minute")
 async def register(request: Request, body: RegisterIn, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == body.email))
+    email = body.email.lower().strip()
+    result = await db.execute(select(User).where(User.email == email))
     if result.scalar_one_or_none():
         raise HTTPException(400, "Email ja cadastrado")
     user = User(
-        full_name=body.full_name,
-        email=body.email,
+        full_name=body.full_name.strip() if body.full_name else None,
+        email=email,
         password_hash=hash_password(body.password),
     )
     db.add(user)
@@ -32,7 +31,8 @@ async def register(request: Request, body: RegisterIn, db: AsyncSession = Depend
 @router.post("/login", response_model=LoginOut)
 @limiter.limit("10/minute")
 async def login(request: Request, form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == form.username))
+    email = form.username.lower().strip()
+    result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if not user or not verify_password(form.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Credenciais invalidas")

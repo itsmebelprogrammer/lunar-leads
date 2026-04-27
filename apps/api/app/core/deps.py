@@ -5,9 +5,14 @@ from sqlalchemy import select
 from app.db.session import get_db
 from app.core.security import decode_token
 from app.models.user import User
-from jose import JWTError
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+_UNAUTHORIZED = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Token invalido",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -15,10 +20,10 @@ async def get_current_user(
 ) -> User:
     try:
         user_id = decode_token(token)
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token invalido")
+    except Exception:
+        raise _UNAUTHORIZED
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if not user:
-        raise HTTPException(status_code=401, detail="Usuario nao encontrado")
+        raise _UNAUTHORIZED
     return user

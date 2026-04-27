@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""
     R2_BUCKET: str = "lunar-leads-exports"
+    FRONTEND_URL: str = "http://localhost:4200"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.FRONTEND_URL.split(",")]
 
 settings = Settings()

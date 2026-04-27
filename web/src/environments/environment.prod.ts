@@ -1,1 +1,4 @@
-export const environment = { production: true, apiUrl: 'https://SUA-API.up.railway.app' };
+export const environment = {
+  production: true,
+  apiUrl: 'https://lunar-leads-api.onrender.com'
+};

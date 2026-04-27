@@ -1,9 +1,14 @@
 # 🌙 Lunar Leads
 
-
 **B2B SaaS lead generation platform.**
 
-> **This repository contains a public version of the project.** The proprietary scraper is not included — see the [Scraper](#scraper) section below.
+> **This repository contains a public skeleton of the project.** The proprietary scraper and seed data are not included — see the [Scraper](#scraper) and [Seed Data](#seed-data) sections below.
+
+---
+
+## Live Demo
+
+**[▶ Access the app](https://lunar-leads.vercel.app)**
 
 ---
 
@@ -85,6 +90,8 @@ docker-compose -f ../../infra/docker-compose.yml up -d
 alembic upgrade head
 
 # Seed states and niches
+cp scripts/seed.example.py scripts/seed.py
+# Edit seed.py and fill in STATES and NICHES, then run:
 python scripts/seed.py
 
 # Start API
@@ -112,9 +119,9 @@ Access at `http://localhost:4200`
 
 ## Scraper
 
-The `worker/scraper.py` file in this repository is a **public stub** — it contains only the expected interface, without the real implementation.
+The `worker/scraper.py` file is not included in this repository — it contains the proprietary implementation.
 
-To activate the scraper, implement the `scrape_google_maps()` function following the interface documented in the file:
+To activate the scraper, create `worker/scraper.py` and implement the `scrape_google_maps()` function:
 
 ```python
 def scrape_google_maps(
@@ -129,6 +136,20 @@ def scrape_google_maps(
 
 ---
 
+## Seed Data
+
+The `scripts/seed.py` file is not included in this repository — it contains the proprietary list of states and market niches.
+
+To seed your own instance, copy the example file and fill in your data:
+
+```bash
+cp scripts/seed.example.py scripts/seed.py
+# Edit seed.py with your STATES and NICHES, then:
+python scripts/seed.py
+```
+
+---
+
 ## License
 
-This project is made available for study and portfolio purposes. The complete scraper implementation is not included in this public repository.
+This project is made available for study and portfolio purposes. The scraper implementation and seed data are not included in this public repository.

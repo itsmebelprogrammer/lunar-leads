@@ -13,9 +13,10 @@ __pycache__/
 .env.*
 !.env.example
 
-# Logica proprietaria
+# Logica e dados proprietarios
 apps/api/worker/scraper.py
 apps/api/worker/scraper.py.backup
+apps/api/scripts/seed.py
 
 # Scripts locais
 setup-git.ps1
@@ -33,9 +34,10 @@ node_modules/
 web/dist/
 web/.angular/
 
-# IDEs
+# IDEs e ferramentas locais
 .vscode/
 .idea/
+.claude/
 *.swp
 *.DS_Store
 Thumbs.db

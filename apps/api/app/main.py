@@ -37,7 +37,13 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        response = JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"},
+        )
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "0"

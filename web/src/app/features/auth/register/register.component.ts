@@ -40,9 +40,9 @@ import { AuthService } from '../../../core/services/auth.service';
             <label class="form-label" for="password">Senha</label>
             <input id="password" type="password" class="form-control"
               [class.is-invalid]="error"
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
               [(ngModel)]="password" name="password"
-              required />
+              required minlength="8" />
           </div>
 
           @if (error) {
@@ -58,7 +58,7 @@ import { AuthService } from '../../../core/services/auth.service';
           }
 
           <button type="submit" class="btn btn--primary btn--full btn--lg"
-            [disabled]="loading || !full_name || !email || !password">
+            [disabled]="loading || !full_name || !email || password.length < 8">
             @if (loading) {
               <span class="btn-spinner"></span> Criando...
             } @else {
@@ -100,9 +100,13 @@ export class RegisterComponent {
       this.router.navigate(['/']);
     } catch (err: any) {
       this.loading = false;
-      this.error = err?.status === 400
-        ? 'E-mail já cadastrado'
-        : 'Erro ao criar conta. Tente novamente.';
+      if (err?.status === 400) {
+        this.error = 'E-mail já cadastrado';
+      } else if (err?.status === 422) {
+        this.error = 'Dados inválidos. Verifique o e-mail e a senha (mínimo 8 caracteres).';
+      } else {
+        this.error = 'Erro ao criar conta. Tente novamente.';
+      }
     }
   }
 }

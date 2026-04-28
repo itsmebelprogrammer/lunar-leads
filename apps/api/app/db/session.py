@@ -8,7 +8,10 @@ def _connect_args(url: str) -> dict:
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
-    return {"ssl": ctx}
+    return {
+        "ssl": ctx,
+        "statement_cache_size": 0,
+    }
 
 engine = create_async_engine(
     settings.DATABASE_URL,
